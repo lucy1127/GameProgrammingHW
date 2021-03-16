@@ -151,14 +151,14 @@ function animate() {
 
 	if(turn){
 		if(mode === 0){
-			car.position.x -= 150 * clock.getDelta();
+			car.position.x -= 133 * clock.getDelta();
 			if(car.position.x <= -200){
 				mode = 1;
 				angle = Math.PI / 2;
 			}
 		}
 		if(mode === 1){
-			angle += Math.PI / 2 * clock.getDelta();
+			angle += 2*Math.PI / 3 * clock.getDelta();
 			car.rotation.y = angle;
 			car.position.set (50*Math.cos(angle) - 200 ,0,50*-Math.sin(angle) + 50);
 		
@@ -167,13 +167,13 @@ function animate() {
 			}
 		}
 		if(mode === 2){
-			car.position.x += 150 * clock.getDelta();
+			car.position.x += 133 * clock.getDelta();
 			if(car.position.x >= 0){
 				mode = 3;
 			}
 		}
 		if(mode === 3){
-			angle += Math.PI / 2 * clock.getDelta();
+			angle += 2*Math.PI / 3 * clock.getDelta();
 			car.rotation.y = angle;
 			car.position.set (50*Math.cos(angle),0,50*-Math.sin(angle) + 50);
 		
