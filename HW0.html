@@ -151,7 +151,7 @@ function animate() {
 
 	if(turn){
 		if(mode === 0){
-			car.position.x -= 100 * clock.getDelta();
+			car.position.x -= 150 * clock.getDelta();
 			if(car.position.x <= -200){
 				mode = 1;
 				angle = Math.PI / 2;
@@ -167,7 +167,7 @@ function animate() {
 			}
 		}
 		if(mode === 2){
-			car.position.x += 100 * clock.getDelta();
+			car.position.x += 150 * clock.getDelta();
 			if(car.position.x >= 0){
 				mode = 3;
 			}
