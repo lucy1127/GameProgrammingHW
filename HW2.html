@@ -112,8 +112,8 @@ class Steve {
 		this.mesh.add( this.legL, this.legR, this.armL, this.armR );
 		this.legL.position.set(ww/2, hh, 0);
 		this.legR.position.set(-ww/2,hh,0);
-		this.armL.position.set(ww, hh*2, 0);
-		this.armR.position.set(-ww,hh*2,0);
+		this.armL.position.set(ww+ww/2, hh*2, 0);
+		this.armR.position.set(-ww-ww/2,hh*2,0);
 	}
 	
 	move(pos, rot, shake1, shake2){
@@ -149,7 +149,7 @@ function init() {
 	document.body.appendChild (renderer.domElement); 
 
 	camera = new THREE.PerspectiveCamera (50, window.innerWidth/window.innerHeight, 1, 1000);
-	camera.position.set (0,200,200);
+	camera.position.set (0,300,300);
 	var controls = new OrbitControls (camera, renderer.domElement);
 
 	var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
@@ -467,19 +467,18 @@ function animate() {
 		let R = 50;//半徑
 		let omega = HH/R/T;  
 		thetaB += omega*dt;
-		steve.move(new THREE.Vector3(R*Math.cos(Math.PI - thetaB)-100, 0, -R*Math.sin(Math.PI - thetaB)), Math.PI - thetaB, intKey[0], intKey[1]);
+		steve.move(new THREE.Vector3(R*Math.cos(Math.PI - thetaB)-50, 0, -R*Math.sin(Math.PI - thetaB)), Math.PI - thetaB, intKey[0], intKey[1]);
 	}
 	else {//small
 		let R = 25;//半徑
 		let omega = HH/R/T;  
 		thetaS += omega*dt;
-		steve.move(new THREE.Vector3(R*Math.cos(thetaS)+50, 0, -R*Math.sin(thetaS)), Math.PI + thetaS, intKey[0], intKey[1]);
+		steve.move(new THREE.Vector3(R*Math.cos(thetaS)+25, 0, -R*Math.sin(thetaS)), Math.PI + thetaS, intKey[0], intKey[1]);
 	}
 	
 	if(personview == 1) steve.look3PV(4);
 	else if(personview == 0){
 		camera.lookAt (0, 0, 0);
-		camera.position.set (0,200,200);
 		personview = 2;
 	}
 	let x = steve.mesh.position.x, z = steve.mesh.position.z;
