@@ -41,9 +41,8 @@ var view = false,personview = false;
 const WW = 4,HH = 12;
 //Circle
 var BigCircle = true;
-var t0, t1;
 var time = new Date();
-var thetaB = 0, thetaS = Math.PI;
+var theta = 0;
 
 /////////////////////////
 
@@ -161,7 +160,6 @@ function init() {
 	loader.setCrossOrigin('');
 	texture = loader.load ('https://i.imgur.com/IejOuMK.png');
 	steve = BuildSteve();
-	t0 = time.getSeconds();
 }
 
 function BuildSteve(){
@@ -458,38 +456,31 @@ function onWindowResize() {
 }
 
 function animate() { 
-
+	
+	let R = 50; //半徑
+	let omega = 12/50/T;  
 	let dt = clock.getDelta();
 	let intKey = keyframe(clock.getElapsedTime());
-	const HH = 12; 
+	
+	theta += omega*dt*8;
+	let count = theta/ (2*Math.PI);
+	
 	//move
-	if(BigCircle){//big
-		let R = 50;//半徑
-		let omega = HH/R/T;  
-		thetaB += omega*dt;
-		steve.move(new THREE.Vector3(R*Math.cos(Math.PI - thetaB)-50, 0, -R*Math.sin(Math.PI - thetaB)), Math.PI - thetaB, intKey[0], intKey[1]);
+	if( count%2  < 1){//big
+		steve.move(new THREE.Vector3(R*Math.cos(Math.PI - theta)-50, 0, -R*Math.sin(Math.PI - theta)), Math.PI - theta, intKey[0], intKey[1]);
 	}
 	else {//small
-		let R = 25;//半徑
-		let omega = HH/R/T;  
-		thetaS += omega*dt;
-		steve.move(new THREE.Vector3(R*Math.cos(thetaS)+25, 0, -R*Math.sin(thetaS)), Math.PI + thetaS, intKey[0], intKey[1]);
+		theta += omega*dt*4;
+		steve.move(new THREE.Vector3(R/2*Math.cos(theta)+25, 0, -R/2*Math.sin(theta)), Math.PI + theta, intKey[0], intKey[1]);
 	}
-	
-	if(personview == 1) steve.look3PV(4);
+
+	//
+	if(personview == true) steve.look3PV(4);
 	else if(personview == 0){
 		camera.lookAt (0, 0, 0);
-		personview = 2;
+		personview = false;
 	}
-	let x = steve.mesh.position.x, z = steve.mesh.position.z;
-	if(Math.floor(x) === 0 & Math.floor(z) === 0){
-		time = new Date();
-		t1 = time.getSeconds();
-		if(Math.abs(t1 - t0) > 1){
-			BigCircle =! BigCircle;
-			t0 = t1;
-		}
-	}
+	
 	
 	renderer.render (scene, camera); 
 	requestAnimationFrame( animate ); 
