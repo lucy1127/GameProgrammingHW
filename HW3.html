@@ -607,6 +607,8 @@ function SpaceUp(event) {
 
 function animate() { 
 
+	let R = 50;//半徑
+	let omega = HH/R/T;  
 	let dt = clock.getDelta();
 	
 	keyboard.update();
@@ -632,14 +634,10 @@ function animate() {
 	}
 	
 	
-	if(walk){
-		let R = 50; //半徑
-		let omega = HH/R/T;  
+	if(walk)
 		theta += omega*dt;
-		//move
-		steve.move(new THREE.Vector3(R*Math.cos(Math.PI - theta), 0, -R*Math.sin(Math.PI - theta)), Math.PI - theta, intKey[0], intKey[1]);
-	}
 	
+	steve.move(new THREE.Vector3(R*Math.cos(Math.PI - theta), 0, -R*Math.sin(Math.PI - theta)), Math.PI - theta, intKey[0], intKey[1]);
 	
     renderer.render (scene, camera);
 	requestAnimationFrame( animate ); 
