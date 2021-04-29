@@ -40,7 +40,7 @@ var theta = 0;
 var keyboard = new KeyboardState();
 var clock = new THREE.Clock();
 //walk
-var ts;// = -1; // ts < 0 --> not yet started
+var ts,T = 1,t;// = -1; // ts < 0 --> not yet started
 var walk = false;
 var state = 'Stand';
 var camera1;
@@ -50,11 +50,12 @@ var camera1;
 $('#Gyro').click(function($event){
 	if(!view){
 		$('#Gyro').text('Gyro');
+		steve.mesh.add(gyro);
 	}
 	else {
 		$('#Gyro').text('lookAt');
+		steve.mesh.remove(gyro);
 	}
-
 	view = !view;
 })
 
@@ -62,54 +63,68 @@ $('#Gyro').click(function($event){
 ///// WALK////////////////////////
 
 var poseWalk0 = {
-  lThigh: Math.PI / 6,
-  rThigh: -Math.PI / 6
+	lThigh: Math.PI / 6,
+	rThigh: -Math.PI / 6
 }
 var poseWalk1 = {
-  lThigh: -Math.PI / 6,
-  rThigh: +Math.PI / 6
+	lThigh: -Math.PI / 6,
+	rThigh: +Math.PI / 6
 }
 var keysWalk = [
-  [0, poseWalk0],
-  [0.5, poseWalk1],
-  [1, poseWalk0]
+	[0, poseWalk0],
+	[0.5, poseWalk1],
+	[1, poseWalk0]
 ];
 var TWalk = 2;
 
 ////////////////////////////////////////////
 //// STAND //////////
 var poseStand0 = { // stand
-  lThigh: 0,
-  rThigh: 0
+	lThigh: 0,
+	rThigh: 0
 }
 var poseStand1 = { // stand
-  lThigh: 0,
-  rThigh: 0
+	lThigh: 0,
+	rThigh: 0
 }
 var keysStand = [
-  [0, poseStand0],
-  [0.5, poseStand0],
-  [1, poseStand1],
+	[0, poseStand0],
+	[0.5, poseStand0],
+	[1, poseStand1],
 ];
 var TStand = 0.5; // any small amount
 
 //// stand-to-walk //////////
 var poseS2W0 = { // stand
-  lThigh: 0,
-  rThigh: 0
+	lThigh: 0,
+	rThigh: 0
 }
 var poseS2W0 = poseStand1; // end of stand
 var poseS2W1 = {
-  lThigh: -Math.PI / 6,
-  rThigh: 0 // right leg stays still
+	lThigh: -Math.PI / 6,
+	rThigh: 0 // right leg stays still
 }
 var poseS2W2 = poseWalk0; // beginning of walk
 var keysS2W = [
-  [0, poseS2W0],
-  [0.5, poseS2W1],
-  [1, poseS2W2],
+	[0, poseS2W0],
+	[0.5, poseS2W1],
+	[1, poseS2W2],
 ];
 var TS2W = TWalk;
+///////////////////////////
+
+var poseW2S0 = poseWalk1; // end of walk
+var poseW2S1 = {
+  lThigh: -Math.PI / 6,
+  rThigh: Math.PI/50 // right leg stays still
+}
+var poseW2S2 = poseStand0; 
+var keysW2S = [
+  [0, poseW2S0],
+  [0.5, poseW2S1],
+  [1, poseW2S2],
+];
+var TW2S = TStand;
 //////////////////////////////////////
 
 function keyframeStand(t, T) { // periodic
@@ -122,19 +137,19 @@ function keyframeStand(t, T) { // periodic
 	// take i-1
 	var ii = i - 1;
 	var a = (s - keys[ii][0]) / (keys[ii + 1][0] - keys[ii][0]);
-	intKey = [keys[ii][1].lThigh * (1 - a) + keys[ii + 1][1].lThigh * a,
-	keys[ii][1].rThigh * (1 - a) + keys[ii + 1][1].rThigh * a
+	let intKey = [keys[ii][1].lThigh * (1 - a) + keys[ii + 1][1].lThigh * a,
+		keys[ii][1].rThigh * (1 - a) + keys[ii + 1][1].rThigh * a
 	];
 	return intKey;
 }
 
 function keyframeS2W(t, T) {
 	if (t - ts > T) { // end of stand
-	console.log('switch to walk');
-	ts = t; // reset ts to start of walk
-	state = 'Walk';
-	// end of S2W: return last frame
-	return [poseS2W2.lThigh, poseS2W2.rThigh];
+		//console.log('switch to walk');
+		ts = t; // reset ts to start of walk
+		state = 'Walk';
+		// end of S2W: return last frame
+		return [poseS2W2.lThigh, poseS2W2.rThigh];
 	}
 
 	// non-periodic stand-to-walk animation
@@ -142,32 +157,58 @@ function keyframeS2W(t, T) {
 	var s = (t - ts) / T;
 
 	for (var i = 1; i < keys.length; i++) {
-	if (keys[i][0] > s) break;
+		if (keys[i][0] > s) break;
 	}
 	// take i-1
 	var ii = i - 1;
 	var a = (s - keys[ii][0]) / (keys[ii + 1][0] - keys[ii][0]);
-	intKey = [keys[ii][1].lThigh * (1 - a) + keys[ii + 1][1].lThigh * a,
-	keys[ii][1].rThigh * (1 - a) + keys[ii + 1][1].rThigh * a
+	let intKey = [keys[ii][1].lThigh * (1 - a) + keys[ii + 1][1].lThigh * a,
+		keys[ii][1].rThigh * (1 - a) + keys[ii + 1][1].rThigh * a
 	];
 	return intKey;
 }
 
-function keyframeWalk(t, T) { // walk; periodic
-  let keys = keysWalk;
-  var s = ((t - ts) % T) / T;
+function keyframeW2S(t, T) {
+    if (t - ts > T) { // end of stand
+        console.log('switch to stand');
+        ts = t; // reset ts to start of walk
+        state = 'Stand';
+        // end of S2W: return last frame
+        return [poseW2S2.lThigh, poseW2S2.rThigh];
+    }
 
-  for (var i = 1; i < keys.length; i++) {
-    if (keys[i][0] > s) break;
-  }
-  // take i-1
-  var ii = i - 1;
-  var a = (s - keys[ii][0]) / (keys[ii + 1][0] - keys[ii][0]);
-  intKey = [keys[ii][1].lThigh * (1 - a) + keys[ii + 1][1].lThigh * a,
+    // non-periodic stand-to-walk animation
+    let keys = keysW2S;
+    var s = (t - ts) / T;
+
+    for (var i = 1; i < keys.length; i++) {
+        if (keys[i][0] > s) break;
+    }
+    // take i-1
+    var ii = i - 1;
+    var a = (s - keys[ii][0]) / (keys[ii + 1][0] - keys[ii][0]);
+    var intKey = [keys[ii][1].lThigh * (1 - a) + keys[ii + 1][1].lThigh * a,
     keys[ii][1].rThigh * (1 - a) + keys[ii + 1][1].rThigh * a
-  ];
-  return intKey;
+    ];
+    return intKey;
 }
+
+function keyframeWalk(t, T) { // walk; periodic
+	let keys = keysWalk;
+	var s = ((t - ts) % T) / T;
+
+	for (var i = 1; i < keys.length; i++) {
+		if (keys[i][0] > s) break;
+	}
+	// take i-1
+	var ii = i - 1;
+	var a = (s - keys[ii][0]) / (keys[ii + 1][0] - keys[ii][0]);
+	let intKey = [keys[ii][1].lThigh * (1 - a) + keys[ii + 1][1].lThigh * a,
+		keys[ii][1].rThigh * (1 - a) + keys[ii + 1][1].rThigh * a
+	];
+	return intKey;
+}
+
 
 class Steve {
 	constructor (body, head, legL, legR, armL, armR, hh, ww) {
@@ -218,7 +259,7 @@ function init() {
 	camera.position.set (0,300,300);
 	
 	camera1 = new THREE.PerspectiveCamera(80, window.innerWidth / window.innerHeight, 1, 1000);
-	camera1.position.z = 500;
+	camera1.position.z = 300;
 	
 	var controls = new OrbitControls (camera, renderer.domElement);
 	var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
@@ -231,14 +272,15 @@ function init() {
 	loader.setCrossOrigin('');
 	texture = loader.load ('https://i.imgur.com/IejOuMK.png');
 	steve = BuildSteve();
+	steve.mesh.position.set(-50, 0, 0);
 	steve.mesh.rotation.y = Math.PI;
 	
 	gyro = new Gyroscope();
-	steve.add(gyro);
 	gyro.add(camera);
 	
 	state = 'Stand';
-    ts = clock.getElapsedTime();
+	ts = clock.getElapsedTime();
+	
 }
 
 function BuildSteve(){
@@ -536,56 +578,51 @@ function onWindowResize() {
 
 
 function animate() { 
+
+	let dt = clock.getDelta();
 	
 	keyboard.update();
-	if (keyboard.down('space')) { // move to walk
+	if (keyboard.down('space')) { 
 		walk = true; 
 		state = 'S2W';
 	}
-	if (keyboard.up('space')) { // move to stand
+	if (keyboard.up('space')) { 
 		walk = false; 
-		state = 'Stand';
-	}
-	
-	if(walk){
-		let R = 50; //半徑
-		let omega = 12/50/T;  
-		let dt = clock.getDelta();
-		let intKey = keyframe(clock.getElapsedTime());
-	
-		theta += omega*dt*8;
-		//move
-		steve.move(new THREE.Vector3(R*Math.cos(Math.PI - theta), 0, -R*Math.sin(Math.PI - theta)), Math.PI - theta, intKey[0], intKey[1]);
+		state = 'W2S';
 	}
 	
 	let intKey;
 	switch (state) {
 		case 'Stand':
-		  console.log('... in stand');
+		  //console.log('... in stand');
 		  intKey = keyframeStand(clock.getElapsedTime(), TStand);
 		  break;
 		case 'S2W':
-		  console.log('... in S2W');
+		  //console.log('... in S2W');
 		  intKey = keyframeS2W(clock.getElapsedTime(), TS2W);
 		  break;
+		case 'W2S':
+		  //console.log('... in W2S');
+		  intKey = keyframeW2S(clock.getElapsedTime(), TW2S);
+		  break;
 		case 'Walk':
-		  console.log('... in walk');
+		  //console.log('... in walk');
 		  intKey = keyframeWalk(clock.getElapsedTime(), TWalk);
 		  break;
 	}
 	
-	legL.rotation.x = intKey[0];
-    legR.rotation.x = intKey[1]; 
-    armR.rotation.x = intKey[1];
-    armL.rotation.x = intKey[0];
 	
-	camera1.lookAt (steve.position);
-    
-	if (view)
-		renderer.render (scene, camera);
-	else
-		renderer.render (scene, camera1);
-
+	
+	if(walk){
+		let R = 50; //半徑
+		let omega = HH/R/T;  
+		theta += omega*dt;
+		//move
+		steve.move(new THREE.Vector3(R*Math.cos(Math.PI - theta), 0, -R*Math.sin(Math.PI - theta)), Math.PI - theta, intKey[0], intKey[1]);
+	}
+	
+	
+    renderer.render (scene, camera);
 	requestAnimationFrame( animate ); 
 }
 </script> 
