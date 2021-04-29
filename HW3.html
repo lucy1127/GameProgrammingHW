@@ -278,6 +278,9 @@ function init() {
 	gyro = new Gyroscope();
 	gyro.add(camera);
 	
+	document.addEventListener('keyup', SpaceUp, false);
+    document.addEventListener('keydown', SpaceDown, false);
+	
 	state = 'Stand';
 	ts = clock.getElapsedTime();
 	
@@ -576,20 +579,37 @@ function onWindowResize() {
 	renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
+function SpaceDown(event) {
+	let keyCode = event.which;
+	
+	if(event.repeat)
+		return ;
+    if (keyCode == 32){
+		walk = true;
+        state = 'S2W';
+  }
+    
+}
+    
+function SpaceUp(event) {
+	let keyCode = event.which;
+	
+    if(event.repeat)
+		return ;
+	if (keyCode == 32){
+		walk = false;
+        state = 'Stand'; 
+		
+		let intKey = keyframeStand(clock.getElapsedTime(), TStand);
+		
+    }
+}
 
 function animate() { 
 
 	let dt = clock.getDelta();
 	
 	keyboard.update();
-	if (keyboard.down('space')) { 
-		walk = true; 
-		state = 'S2W';
-	}
-	if (keyboard.up('space')) { 
-		walk = false; 
-		state = 'W2S';
-	}
 	
 	let intKey;
 	switch (state) {
@@ -610,7 +630,6 @@ function animate() {
 		  intKey = keyframeWalk(clock.getElapsedTime(), TWalk);
 		  break;
 	}
-	
 	
 	
 	if(walk){
