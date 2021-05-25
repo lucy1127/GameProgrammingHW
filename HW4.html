@@ -137,7 +137,7 @@ class Agent {
 	if(Separation){
 		for (let i = 0; i < this.nbhd.length; i++) {
 			let point = this.pos.clone().sub(this.nbhd[i].pos);
-			push.add(point.setLength(120 / point.length()));
+			push.add(point.setLength(150 / point.length()));
 		}
 		this.force.add(push);
 	}
@@ -153,7 +153,7 @@ class Agent {
 			
 			// 利用 targetInducedForce （來吸引 this 往平均位置靠近）	
 			let point = this.pos.clone().sub(new THREE.Vector3(x, 0, z));
-			push.add(point.setLength(120 / point.length()));
+			push.add(point.setLength(150 / point.length()));
 			// 將此力加到 this.force
 			this.force.add(push);
 		}
