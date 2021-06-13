@@ -149,7 +149,7 @@ init();
 animate();
 
 function BuildAgent(){
-	let pos = new THREE.Vector3(-50, -20, 0);
+	let pos = new THREE.Vector3(-45, -20, 0);
 	let mesh = new THREE.Mesh(new THREE.CircleGeometry(1, 20), new THREE.MeshBasicMaterial({color: 'white'}));
 	let agent = new Agent(pos, mesh);
 	agent.vel.set(4, -2, 0);
